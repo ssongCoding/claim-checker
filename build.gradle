@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// JDK 17 문법·API로 컴파일 (더 높은 JDK가 설치돼 있어도 17 기준)
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+    options.encoding = 'UTF-8'
+}
+
+application {
+    mainClass = 'checker.Main'
+}
+
+tasks.named('run') {
+    workingDir = projectDir      // data/small, data/large 를 상대 경로로 읽는다
+    standardOutput = System.out
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        exceptionFormat = 'short'
+    }
+}
+
+// 2.2 실험: ./gradlew benchmark
+tasks.register('benchmark', JavaExec) {
+    group = 'application'
+    description = '이중 반복문 vs 해시 속도 비교 (2.2)'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'checker.Benchmark'
+    workingDir = projectDir
+}
